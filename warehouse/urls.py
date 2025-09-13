@@ -16,5 +16,6 @@ urlpatterns = [
     path('export/pdf/', views.export_pdf, name='export_pdf'),
     path('product-autocomplete/', views.product_autocomplete, name='product_autocomplete'),
     path('logout/', views.user_logout, name='logout'),
+    path('products/delete/<int:pk>/', views.product_delete, name='product_delete'),
 
 ]

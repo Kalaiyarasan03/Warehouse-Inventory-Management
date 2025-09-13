@@ -302,3 +302,13 @@ def product_autocomplete(request):
 def user_logout(request):
     logout(request)
     return redirect('warehouse:login')  # or wherever you want to redirect
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib import messages
+from .models import Product
+
+def product_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        product.delete()
+        messages.success(request, f"Product '{product.name}' has been deleted.")
+    return redirect('warehouse:product_list')  # Adjust this to your product list view name
