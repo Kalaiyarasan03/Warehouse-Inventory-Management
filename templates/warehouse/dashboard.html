@@ -1,0 +1,133 @@
+{% extends 'warehouse/base.html' %}
+{% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<style>
+    body { background-color: #f8f9fa; }
+    .dashboard-card {
+        border: none; border-radius: 15px; padding: 20px;
+        color: white; position: relative; overflow: hidden;
+        transition: all 0.3s ease; text-align: center;
+    }
+    .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); }
+    .card-in { background: linear-gradient(135deg, #11998e, #38ef7d); }
+    .card-out { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+    .card-month-in { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .card-month-out { background: linear-gradient(135deg, #f093fb, #f5576c); }
+    .chart-card, .table-card {
+        border: none; border-radius: 15px; background: #fff;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+    }
+    .dashboard-title {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        font-weight: 700; margin-bottom: 1.5rem;
+    }
+    .badge-sku { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+    canvas { max-height: 250px; }
+</style>
+
+<div class="container-fluid py-3">
+    <div class="text-center mb-4">
+        <h2 class="dashboard-title"><i class="fas fa-chart-line me-2"></i>Inventory Dashboard</h2>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-3">
+            <div class="dashboard-card card-in">
+                <h6>Today's IN</h6>
+                <h3>{{ daily_in }}</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="dashboard-card card-out">
+                <h6>Today's OUT</h6>
+                <h3>{{ daily_out }}</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="dashboard-card card-month-in">
+                <h6>Month IN</h6>
+                <h3>{{ month_in }}</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="dashboard-card card-month-out">
+                <h6>Month OUT</h6>
+                <h3>{{ month_out }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="chart-card">
+                <h5><i class="fas fa-chart-bar me-2 text-primary"></i>Daily Movements</h5>
+                <canvas id="dailyChart"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-card">
+                <h5><i class="fas fa-chart-pie me-2 text-success"></i>Top Products</h5>
+                <canvas id="topProductsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Products Table -->
+    <div class="table-card">
+        <h5><i class="fas fa-trophy me-2 text-warning"></i>Top Outgoing Products (This Month)</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                    <tr><th>#</th><th>SKU</th><th>Name</th><th>Qty</th></tr>
+                </thead>
+                <tbody>
+                    {% for p in top_products %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><span class="badge badge-sku">{{ p.product__sku }}</span></td>
+                        <td>{{ p.product__name }}</td>
+                        <td><strong>{{ p.total }}</strong></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center">No data</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Daily Movements Chart
+    new Chart(document.getElementById('dailyChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Today IN', 'Today OUT', 'Month IN', 'Month OUT'],
+            datasets: [{
+                label: 'Movements',
+                data: [{{ daily_in }}, {{ daily_out }}, {{ month_in }}, {{ month_out }}],
+                backgroundColor: ['#28a745','#dc3545','#28a745','#dc3545']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+
+    // Top Products Chart
+    const labels = [{% for p in top_products %}'{{ p.product__name }}',{% endfor %}];
+    const data = [{% for p in top_products %}{{ p.total }},{% endfor %}];
+    new Chart(document.getElementById('topProductsChart').getContext('2d'), {
+        type: 'doughnut',
+        data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#007bff','#ffc107','#28a745','#dc3545','#17a2b8'] }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+});
+</script>
+{% endblock %}

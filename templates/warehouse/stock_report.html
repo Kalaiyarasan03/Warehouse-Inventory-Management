@@ -1,0 +1,82 @@
+{% extends 'warehouse/base.html' %}
+{% block content %}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary">
+            <i class="fas fa-warehouse me-2"></i>Stock Report
+        </h3>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" class="row g-3 align-items-end mb-4">
+        <div class="col-md-4">
+            <label for="date_range" class="form-label">Date Range</label>
+            <input type="text" id="date_range" name="date_range"
+                   value="{{ date_range }}"
+                   class="form-control" placeholder="Select range...">
+        </div>
+
+        <div class="col-md-8 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-1"></i> Search
+            </button>
+            <a href="{% url 'warehouse:stock' %}" class="btn btn-secondary">
+                <i class="fas fa-redo me-1"></i> Reset
+            </a>
+            <button type="submit" name="export" value="excel" class="btn btn-success">
+                <i class="fas fa-file-excel me-1"></i> Export Excel
+            </button>
+            <button type="submit" name="export" value="pdf" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-1"></i> Export PDF
+            </button>
+        </div>
+    </form>
+
+    <!-- Stock Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped align-middle table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>SKU</th>
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ p.sku }}</span></td>
+                            <td>{{ p.name }}</td>
+                            <td>{{ p.quantity }}</td>
+                            <td>{{ p.created_at|date:"Y-m-d H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No products found for the selected date range.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Flatpickr Assets -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr("#date_range", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            allowInput: true
+        });
+    });
+</script>
+
+{% endblock %}

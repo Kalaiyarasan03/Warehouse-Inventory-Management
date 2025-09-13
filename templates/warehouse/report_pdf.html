@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><style>table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:4px;font-size:12px}</style></head>
+<body>
+<h3>Inventory Report</h3>
+<table>
+<tr><th>Date</th><th>SKU</th><th>Product</th><th>Type</th><th>Qty</th></tr>
+{% for t in txs %}
+<tr><td>{{ t.created_at }}</td><td>{{ t.product.sku }}</td><td>{{ t.product.name }}</td><td>{{ t.tx_type }}</td><td>{{ t.quantity }}</td></tr>
+{% endfor %}
+</table>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{% extends 'warehouse/base.html' %}
+{% block content %}
+<div class="container" style="max-width: 400px; margin-top: 50px;">
+    <h3 class="mb-4 text-center">Login</h3>
+
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        Please correct the errors below.
+    </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_username" class="form-label">Username</label>
+            <input type="text" name="username" autofocus
+                class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                id="id_username" value="{{ form.username.value|default_if_none:'' }}">
+            {% for error in form.username.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_password" class="form-label">Password</label>
+            <input type="password" name="password"
+                class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                id="id_password">
+            {% for error in form.password.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Log In</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'warehouse/base.html' %}
+{% block content %}
+<div class="container-fluid px-4">
+
+    <!-- Page Heading -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary">
+            <i class="fas fa-arrow-down me-2"></i>Income (Scan barcode or enter SKU)
+        </h3>
+    </div>
+
+    <!-- Flash message -->
+    {% if message %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <!-- Income Form -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="post" id="scanForm" class="row g-3 needs-validation" novalidate>
+                {% csrf_token %}
+
+                <div class="col-md-6">
+                    <label for="id_sku" class="form-label">Product Name or SKU / Barcode</label>
+                    <input type="text" name="sku" class="form-control {% if form.sku.errors %}is-invalid{% endif %}"
+                           id="id_sku" placeholder="Start typing product name or SKU"
+                           value="{{ form.sku.value|default_if_none:'' }}"
+                           autocomplete="off" required>
+                    {% for error in form.sku.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-4">
+                    <label for="id_quantity" class="form-label">Quantity</label>
+                    <input type="number" name="quantity" class="form-control {% if form.quantity.errors %}is-invalid{% endif %}"
+                           id="id_quantity" min="1" value="{{ form.quantity.value|default_if_none:1 }}" required>
+                    {% for error in form.quantity.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-plus me-1"></i> Add
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recent Income Entries -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light fw-bold">
+            <i class="fas fa-history me-2"></i> Recent Income
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">SKU</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col" class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in updates %}
+                        <tr>
+                            <td>{{ u.created_at|date:"Y-m-d H:i" }}</td>
+                            <td><span class="badge bg-primary">{{ u.product.sku }}</span></td>
+                            <td>{{ u.quantity }}</td>
+                            <td class="text-center">
+                                <form method="post" onsubmit="return confirm('Remove this transaction?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="remove_id" value="{{ u.id }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit" title="Remove Entry">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No recent income entries.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include jQuery and jQuery UI CSS & JS for autocomplete -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+<!-- Autocomplete script -->
+<script>
+    $(function () {
+        $("#id_sku").autocomplete({
+            source: "{% url 'warehouse:product_autocomplete' %}",
+            minLength: 2,
+            delay: 300,
+            select: function (event, ui) {
+                // Put selected SKU in the input
+                $("#id_sku").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+</script>
+
+<!-- Bootstrap validation script -->
+<script>
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+
+<!-- Autofocus SKU input -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const skuField = document.querySelector('input[name=sku]');
+        if (skuField) {
+            skuField.focus();
+        }
+    });
+</script>
+{% endblock %}
